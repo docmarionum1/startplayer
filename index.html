@@ -29,7 +29,7 @@
 
     var radius = 50;
 
-    var state = "settings";
+    var state = "start";
     var sleepTime;
     var iterations;
     var index = 0;
@@ -55,11 +55,6 @@
         ctx.clearRect(0, 0, w, h);
 
         if (state == "pick") {
-          /*if (timeRemaining > 0) {
-            index = (index + 1) % touches.length;
-            timeRemaining -= 20;
-          }*/
-
           var touch = touches[index];
           var px = touch.pageX;
           var py = touch.pageY;
@@ -91,23 +86,24 @@
 
       if (iterations > 0) {
         setTimeout(iterateTouches, sleepTime);
+      } else {
+        setTimeout(function() {
+          state = "start";
+          touches = [];
+        }, 3000);
       }
     }
 
     function main() {
       canvas = document.getElementById('canvas');
 
-      var nw = window.innerWidth;
-      var nh = window.innerHeight;
+      w = window.innerWidth;
+      h = window.innerHeight;
 
-      if ((w != nw) || (h != nh)) {
-          w = nw;
-          h = nh;
-          canvas.style.width = w+'px';
-          canvas.style.height = h+'px';
-          canvas.width = w;
-          canvas.height = h;
-      }
+      canvas.style.width = w+'px';
+      canvas.style.height = h+'px';
+      canvas.width = w;
+      canvas.height = h;
 
       players = document.getElementById('players');
       players.style.fontSize = h/2 + 'px';
@@ -118,41 +114,40 @@
       window.requestAnimationFrame(update);
 
       canvas.addEventListener('touchend', function() {
-        //event.preventDefault();
-        if (state == "countdown") {
+        if (state == "start") {
           touches = event.touches;
         }
       });
 
       canvas.addEventListener('touchmove', function(event) {
         event.preventDefault();
-        if (state == "settings") {
-          numPlayers = startNumPlayers - parseInt((event.targetTouches[0].pageY - settingsTouchStart)/50);
-          players.innerHTML = numPlayers;
-        } else if (state == "countdown") {
+        if (state == "start") {
           touches = event.touches;
+
+          if (touches.length == 1) {
+            numPlayers = startNumPlayers - parseInt((event.targetTouches[0].pageY - settingsTouchStart)/50);
+            if (numPlayers < 2) {
+              numPlayers = 2;
+            }
+            players.innerHTML = numPlayers;
+          }
         }
       });
 
       canvas.addEventListener('touchstart', function(event) {
-        //event.preventDefault();
-        if (state == "settings") {
-          settingsTouchStart = event.targetTouches[0].pageY;
-          startNumPlayers = numPlayers;
-        } else if (state == "countdown") {
+        if (state == "start") {
           touches = event.touches;
 
-          if (touches.length == numPlayers) {
+          if (touches.length == 1) {
+            settingsTouchStart = event.targetTouches[0].pageY;
+            startNumPlayers = numPlayers;
+          } else if (touches.length == numPlayers) {
             state = "pick";
             iterations = 30 + Math.random() * touches.length*2;
             sleepTime = 0;
             iterateTouches();
           }
         }
-      });
-
-      Hammer(canvas).on("doubletap", function() {
-        state = "countdown";
       });
     };
 
