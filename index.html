@@ -2,11 +2,10 @@
 <html>
   <head>
     <title>Start Player</title>
-    <meta name="viewport" content="width=device-width, user-scalable=no">
+    <meta name="viewport" content="user-scalable=no">
     <style type="text/css">
       body { margin: 0px; overflow: hidden; }
-      canvas { 
-        border: 1px solid black; 
+      canvas {
         position: absolute;
         top: 0px;
         z-index: 10;
@@ -27,7 +26,7 @@
 
     var touches = [];
 
-    var radius = 50;
+    var radius = 125;
 
     var state = "start";
     var sleepTime;
@@ -80,17 +79,21 @@
     }
 
     function iterateTouches() {
-      index = (index + 1) % touches.length;
-      sleepTime += Math.random()*150/(iterations+1);
-      iterations--;
+      try {
+        index = (index + 1) % touches.length;
+        sleepTime += Math.random()*150/(iterations+1);
+        iterations--;
 
-      if (iterations > 0) {
-        setTimeout(iterateTouches, sleepTime);
-      } else {
-        setTimeout(function() {
-          state = "start";
-          touches = [];
-        }, 3000);
+        if (iterations > 0) {
+          setTimeout(iterateTouches, sleepTime);
+        } else {
+          setTimeout(function() {
+            state = "start";
+            touches = [];
+          }, 3000);
+        }
+      } catch (e) {
+        alert(e);
       }
     }
 
@@ -120,33 +123,41 @@
       });
 
       canvas.addEventListener('touchmove', function(event) {
-        event.preventDefault();
-        if (state == "start") {
-          touches = event.touches;
+        try {
+          event.preventDefault();
+          if (state == "start") {
+            touches = event.touches;
 
-          if (touches.length == 1) {
-            numPlayers = startNumPlayers - parseInt((event.targetTouches[0].pageY - settingsTouchStart)/50);
-            if (numPlayers < 2) {
-              numPlayers = 2;
+            if (touches.length == 1) {
+              numPlayers = startNumPlayers - parseInt((event.targetTouches[0].pageY - settingsTouchStart)/50);
+              if (numPlayers < 2) {
+                numPlayers = 2;
+              }
+              players.innerHTML = numPlayers;
             }
-            players.innerHTML = numPlayers;
           }
+        } catch (e) {
+          alert(e);
         }
       });
 
       canvas.addEventListener('touchstart', function(event) {
-        if (state == "start") {
-          touches = event.touches;
+        try {
+          if (state == "start") {
+            touches = event.touches;
 
-          if (touches.length == 1) {
-            settingsTouchStart = event.targetTouches[0].pageY;
-            startNumPlayers = numPlayers;
-          } else if (touches.length == numPlayers) {
-            state = "pick";
-            iterations = 30 + Math.random() * touches.length*2;
-            sleepTime = 0;
-            iterateTouches();
+            if (touches.length == 1) {
+              settingsTouchStart = event.targetTouches[0].pageY;
+              startNumPlayers = numPlayers;
+            } else if (touches.length == numPlayers) {
+              state = "pick";
+              iterations = 30 + Math.random() * touches.length*2;
+              sleepTime = 0;
+              iterateTouches();
+            }
           }
+        } catch (e) {
+          alert(e);
         }
       });
     };
@@ -155,7 +166,7 @@
   </head>
   <body onload="main()">
     
-    <canvas id="canvas" width="300" height="300" style="top:0px; left:0px; width: 300px; height: 300px;"></canvas>
+    <canvas id="canvas"></canvas>
     <center id="players"></center>
   </body>
 </html>
