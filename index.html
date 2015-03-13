@@ -3,170 +3,231 @@
   <head>
     <title>Start Player</title>
     <meta name="viewport" content="user-scalable=no">
+
+    <link rel="stylesheet" type="text/css" href="slick/slick.css"/>
+    <link rel="stylesheet" type="text/css" href="slick/slick-theme.css"/>
+
     <style type="text/css">
-      body { margin: 0px; overflow: hidden; }
+      body { 
+        margin: 0px; 
+        overflow: hidden; 
+        width: 100%;
+        height: 100%;
+      }
+
       canvas {
         position: absolute;
         top: 0px;
-        z-index: 10;
       }
-      #players {
-        position: absolute;
+
+      .players {
         top: 0px;
         width: 100%;
+        font-size: 50vh;
+        text-align: center;
+        width: 100%;
+        display: block;
+      }
+
+      .modeTitle {
+        font-size: 10vh;
+        text-align: center;
+        width: 100%;
+        display: block;
+        position: relative;
+        top: 25px;
+      }
+
+      #modes {
+        height: 100%;
+        margin: 0px;
+      }
+
+      .slick-dots {
+        bottom: 0px;
+      }
+
+      .slick-dots li button:before {
+        font-size: 40pt;
+      }
+
+      .slick-dots li {
+        margin: 40pt;
+        padding-bottom: 
       }
     </style>
-    <script type="text/javascript" src="hammer.min.js"></script>
+
+    <script type="text/javascript" src="//code.jquery.com/jquery-1.11.0.min.js"></script>
+    <script type="text/javascript" src="//code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
+    <script type="text/javascript" src="slick/slick.min.js"></script>
     <script type="text/javascript">
 
-    var canvas;
-    var ctx;
-    var w = 0;
-    var h = 0;
+      var canvas;
+      var ctx;
+      var w = 0;
+      var h = 0;
 
-    var touches = [];
+      var touches = [];
 
-    var radius = 125;
+      var radius = 125;
 
-    var state = "start";
-    var sleepTime;
-    var iterations;
-    var index = 0;
+      var state = "start";
+      var sleepTime;
+      var iterations;
+      var index = 0;
 
-    var startNumPlayers = 4;
-    var numPlayers = 4;
-    var settingsTouchStart;
+      var startNumPlayers = 4;
+      var numPlayers = 4;
+      var settingsTouchStart;
 
-    function drawCircle(px, py, color) {
-      ctx.beginPath();
-      ctx.arc(px, py, radius, 0, 2*Math.PI, true);
+      function drawCircle(px, py, color) {
+        ctx.beginPath();
+        ctx.arc(px, py, radius, 0, 2*Math.PI, true);
 
-      ctx.fillStyle = color + ", 0.2)";//"rgba(0, 0, 200, 0.2)";
-      ctx.fill();
+        ctx.fillStyle = color + ", 0.2)";//"rgba(0, 0, 200, 0.2)";
+        ctx.fill();
 
-      ctx.lineWidth = 2.0;
-      ctx.strokeStyle = color + ", 0.8)";
-      ctx.stroke();
-    }
+        ctx.lineWidth = 2.0;
+        ctx.strokeStyle = color + ", 0.8)";
+        ctx.stroke();
+      }
 
-    function update() {
-      try {
-        ctx.clearRect(0, 0, w, h);
+      function update() {
+        try {
+          ctx.clearRect(0, 0, w, h);
 
-        if (state == "pick") {
-          var touch = touches[index];
-          var px = touch.pageX;
-          var py = touch.pageY;
-          if (iterations <= 0) {
-            drawCircle(px, py, "rgba(200, 0, 0");
-          } else {
-            drawCircle(px, py, "rgba(0, 0, 200");
-          }
-
-        } else {
-          for (var i=0; i < touches.length; i++) {
-            var touch = touches[i];
+          if (state == "pick") {
+            var touch = touches[index];
             var px = touch.pageX;
             var py = touch.pageY;
-            drawCircle(px, py, "rgba(0, 0, 200");
+            if (iterations <= 0) {
+              drawCircle(px, py, "rgba(200, 0, 0");
+            } else {
+              drawCircle(px, py, "rgba(0, 0, 200");
+            }
+
+          } else {
+            for (var i=0; i < touches.length; i++) {
+              var touch = touches[i];
+              var px = touch.pageX;
+              var py = touch.pageY;
+              drawCircle(px, py, "rgba(0, 0, 200");
+            }
           }
+
+          window.requestAnimationFrame(update);
+        } catch (e) {
+          alert(e);
         }
+      }
+
+      function iterateTouches() {
+        try {
+          index = (index + 1) % touches.length;
+          sleepTime += Math.random()*150/(iterations+1);
+          iterations--;
+
+          if (iterations > 0) {
+            setTimeout(iterateTouches, sleepTime);
+          } else {
+            setTimeout(function() {
+              state = "start";
+              touches = [];
+            }, 3000);
+          }
+        } catch (e) {
+          alert(e);
+        }
+      }
+
+      $(document).ready(function(){
+        w = window.innerWidth;
+        h = window.innerHeight;
+
+        $('body').width(w);
+        $('body').height(h);
+
+        $('.players').html(numPlayers);
+
+        canvas = document.getElementById('canvas');
+        $(canvas).width(w);
+        $(canvas).height(h);
+        canvas.width = w;
+        canvas.height = h;
+        ctx = canvas.getContext('2d');
 
         window.requestAnimationFrame(update);
-      } catch (e) {
-        alert(e);
-      }
-    }
+        
+        $('#modes').slick({
+          mobileFirst: true,
+          arrows: false,
+          dots: true
+        });
 
-    function iterateTouches() {
-      try {
-        index = (index + 1) % touches.length;
-        sleepTime += Math.random()*150/(iterations+1);
-        iterations--;
-
-        if (iterations > 0) {
-          setTimeout(iterateTouches, sleepTime);
-        } else {
-          setTimeout(function() {
-            state = "start";
-            touches = [];
-          }, 3000);
-        }
-      } catch (e) {
-        alert(e);
-      }
-    }
-
-    function main() {
-      canvas = document.getElementById('canvas');
-
-      w = window.innerWidth;
-      h = window.innerHeight;
-
-      canvas.style.width = w+'px';
-      canvas.style.height = h+'px';
-      canvas.width = w;
-      canvas.height = h;
-
-      players = document.getElementById('players');
-      players.style.fontSize = h/2 + 'px';
-      players.innerHTML = numPlayers;
-
-      ctx = canvas.getContext('2d');
-
-      window.requestAnimationFrame(update);
-
-      canvas.addEventListener('touchend', function() {
-        if (state == "start") {
-          touches = event.touches;
-        }
-      });
-
-      canvas.addEventListener('touchmove', function(event) {
-        try {
-          event.preventDefault();
+        window.addEventListener('touchend', function() {
           if (state == "start") {
             touches = event.touches;
+          }
+        });
 
-            if (touches.length == 1) {
-              numPlayers = startNumPlayers - parseInt((event.targetTouches[0].pageY - settingsTouchStart)/50);
-              if (numPlayers < 2) {
-                numPlayers = 2;
+        window.addEventListener('touchmove', function(event) {
+          try {
+            //event.preventDefault();
+            if (state == "start") {
+              touches = event.touches;
+
+              if (touches.length == 1) {
+                numPlayers = startNumPlayers - parseInt((event.targetTouches[0].pageY - settingsTouchStart)/100);
+                if (numPlayers < 2) {
+                  numPlayers = 2;
+                }
+                $('.players').html(numPlayers);
               }
-              players.innerHTML = numPlayers;
             }
+          } catch (e) {
+            alert(e);
           }
-        } catch (e) {
-          alert(e);
-        }
-      });
+        });
 
-      canvas.addEventListener('touchstart', function(event) {
-        try {
-          if (state == "start") {
-            touches = event.touches;
+        window.addEventListener('touchstart', function(event) {
+          try {
+            if (state == "start") {
+              touches = event.touches;
 
-            if (touches.length == 1) {
-              settingsTouchStart = event.targetTouches[0].pageY;
-              startNumPlayers = numPlayers;
-            } else if (touches.length == numPlayers) {
-              state = "pick";
-              iterations = 30 + Math.random() * touches.length*2;
-              sleepTime = 0;
-              iterateTouches();
+              if (touches.length == 1) {
+                settingsTouchStart = event.targetTouches[0].pageY;
+                startNumPlayers = numPlayers;
+              } else if (touches.length == numPlayers) {
+                state = "pick";
+                iterations = 30 + Math.random() * touches.length*2;
+                sleepTime = 0;
+                iterateTouches();
+              }
             }
+          } catch (e) {
+            alert(e);
           }
-        } catch (e) {
-          alert(e);
-        }
+        });
       });
-    };
 
     </script>
   </head>
-  <body onload="main()">
-    
+  <body>
     <canvas id="canvas"></canvas>
-    <center id="players"></center>
+    <div id="modes">
+        <div>
+          <span class="modeTitle">Start Player</span>
+          <span class="players"></span>
+        </div>
+        <div>
+          <span class="modeTitle">Groups</span>
+          <span class="players"></span>
+        </div>
+        <div>
+          <span class="modeTitle">Order</span>
+          <span class="players"></span>
+        </div>
+    </div>
+    
   </body>
 </html>
